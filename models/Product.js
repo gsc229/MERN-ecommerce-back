@@ -26,7 +26,7 @@ const productSchema = new mongoose.Schema({
     ref: 'Category',
     required: true
   }, 
-  qunatity: {
+  quantity: {
     type: Number
   },
   sold: {

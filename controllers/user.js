@@ -11,9 +11,7 @@ exports.userById = (req, res, next, id) => {
     user.salt = undefined
     user.hashed_password = undefined
     req.profile = user;
-    next();
-
-
+    next()
   })
   console.log(req.body)
 }

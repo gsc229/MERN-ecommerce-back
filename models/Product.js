@@ -43,9 +43,6 @@ const productSchema = new mongoose.Schema({
     type: Boolean
   }
 
-
-    
-
 },{timestamps: true})
 
 

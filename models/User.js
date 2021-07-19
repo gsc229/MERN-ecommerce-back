@@ -52,9 +52,6 @@ userSchema.methods = {
 
   // authenticate users on sign in
   authenticate: function(plainTextPassword){
-    console.log(`plainTextPassw:  ${plainTextPassword}`)
-    console.log(`encryptPassword: ${this.encryptPassword(plainTextPassword)}`)
-    console.log(`hased_password:  ${this.hashed_password}`)
     return this.encryptPassword(plainTextPassword) === this.hashed_password
   },
 

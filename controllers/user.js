@@ -1,51 +1,50 @@
-const User = require('../models/User')
+const User = require("../models/User");
 
 exports.userById = (req, res, next, id) => {
-  User.findById(id).exec((err, user)=>{
-    if(err||!user){
+  User.findById(id).exec((err, user) => {
+    if (err || !user) {
       return res.status(400).json({
-        error: 'User not found'
-        
-      })
+        error: "User not found",
+      });
     }
-    user.salt = undefined
-    user.hashed_password = undefined
+    user.salt = undefined;
+    user.hashed_password = undefined;
     req.profile = user;
-    next()
-  })
-  console.log(req.body)
-}
+    next();
+  });
+  console.log(req.body);
+};
 
-exports.read = (req, res)=>{
-  req.profile.hashed_password = undefined
-  req.profile.salt = undefined
-  return res.json(req.profile)
-}
+exports.read = (req, res) => {
+  req.profile.hashed_password = undefined;
+  req.profile.salt = undefined;
+  return res.json(req.profile);
+};
 
-exports.update = (req, res)=>{
-  console.log('user upadate req.profile: ', req.profile)
-  console.log('\nuser upadate req.body: ', req.body)
+exports.update = (req, res) => {
+  console.log("user upadate req.profile: ", req.profile);
+  console.log("\nuser upadate req.body: ", req.body);
   User.findOneAndUpdate(
-    {_id: req.profile._id}, 
-    {$set: req.body}, 
-    {new: true},
+    { _id: req.profile._id },
+    { $set: req.body },
+    { new: true },
     (err, user) => {
-      if(err){
+      if (err) {
         return res.status(400).json({
-          error: 'You are not authorized to perform this action'
-        })
+          error: "You are not authorized to perform this action",
+        });
       }
-    user.salt = undefined
-    user.hashed_password = undefined
-    res.json(user)
-    })
-    
-}
+      user.salt = undefined;
+      user.hashed_password = undefined;
+      res.json(user);
+    }
+  );
+};
 // middleware to add order history to the User object.
 exports.addOrderToUserHistor = (req, res, next) => {
-  let history = []
+  let history = [];
 
-  req.body.products.forEach((item)=>{
+  req.body.products.forEach((item) => {
     history.push({
       _id: item._id,
       name: item.name,
@@ -53,23 +52,22 @@ exports.addOrderToUserHistor = (req, res, next) => {
       category: item.category,
       quantity: item.count,
       transaction_id: req.body.transaction_id,
-      amount: req.body.amount
-    })
-  })
+      amount: req.body.amount,
+    });
+  });
 
   User.findByIdAndUpdate(
-    {_id: req.profile._id}, 
-    {$push: {history: history}}, 
-    {new: true}, 
-    (error, data)=>{
-      if(error){
+    { _id: req.profile._id },
+    { $push: { history: history } },
+    { new: true },
+    (error, data) => {
+      if (error) {
         return res.status(400).json({
-          error: 'Could not update user purchase.'
-        })
+          error: "Could not update user purchase.",
+        });
       }
 
-      next()
+      next();
     }
-    )
-
-}
+  );
+};

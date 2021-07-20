@@ -1,8 +1,8 @@
-const formidable = require('formidable'); // for form data and image upload
-const _ = require('lodash'); //provides some helper methods used in the update product method
-const fs = require('fs');
-const errorHandler = require('../helpers/dbErrorHandler');
-const Product = require('../models/Product');
+const formidable = require("formidable"); // for form data and image upload
+const _ = require("lodash"); //provides some helper methods used in the update product method
+const fs = require("fs");
+const errorHandler = require("../helpers/dbErrorHandler");
+const Product = require("../models/Product");
 
 exports.productById = (req, res, next, id) => {
   // we get id by from the router.param('productId', productById). Id is a positional argument
@@ -10,7 +10,7 @@ exports.productById = (req, res, next, id) => {
   Product.findById(id).exec((err, product) => {
     if (err || !product) {
       return res.status(404).json({
-        error: `Product with id of ${req.params.productId} does not exist.`
+        error: `Product with id of ${req.params.productId} does not exist.`,
       });
     }
 
@@ -23,7 +23,7 @@ exports.read = (req, res) => {
   req.product.photo = undefined;
   return res.json({
     product: req.product,
-    category: req.category
+    category: req.category,
   });
 };
 
@@ -32,11 +32,11 @@ exports.remove = (req, res) => {
   product.remove((err, success) => {
     if (err) {
       return res.status(400).json({
-        error: errorHandler(err)
+        error: errorHandler(err),
       });
     }
     res.status(202).json({
-      message: `Product with id of ${req.params.productId} was successfully deleted.`
+      message: `Product with id of ${req.params.productId} was successfully deleted.`,
     });
   });
 };
@@ -47,30 +47,32 @@ exports.create = (req, res) => {
   form.parse(req, (err, fields, files) => {
     if (err) {
       return res.status(400).json({
-        error: 'Image could not be uploaded'
+        error: "Image could not be uploaded",
       });
     }
     // check for all fields
-    const {
-      name,
-      price,
-      description,
-      category,
-      quantity,
-      shipping
-    } = fields;
-    if (!name || !price || !description || !category || !quantity || !shipping) {
+    const { name, price, description, category, quantity, shipping } = fields;
+
+    if (
+      !name ||
+      !price ||
+      !description ||
+      !category ||
+      !quantity ||
+      !shipping
+    ) {
       return res.status(400).json({
-        error: 'All fileds are required'
+        error: "All fileds are required",
       });
     }
+
     let product = new Product(fields);
 
     if (files.photo) {
       // 1kb=1000 1mb = 1000000
       if (files.photo.size > 1000000) {
         return res.status(400).json({
-          error: 'Image should be less than 1MB in size.'
+          error: "Image should be less than 1MB in size.",
         });
       }
       product.photo.data = fs.readFileSync(files.photo.path);
@@ -80,12 +82,12 @@ exports.create = (req, res) => {
     product.save((err, result) => {
       if (err) {
         return res.status(400).json({
-          error: errorHandler(err)
+          error: errorHandler(err),
         });
       }
 
       res.status(201).json({
-        product: result
+        product: result,
       });
     });
   });
@@ -97,34 +99,40 @@ exports.update = (req, res) => {
   form.parse(req, (err, fields, files) => {
     if (err) {
       return res.status(400).json({
-        error: 'Image could not be uploaded'
+        error: "Image could not be uploaded",
       });
     }
     // check for all fields
-    const {
-      name,
-      price,
-      description,
-      category,
-      quantity,
-      shipping
-    } = fields;
-    if (!name || !price || !description || !category || !quantity || !shipping) {
+    const { name, price, description, category, quantity, shipping } = fields;
+
+    if (
+      !name ||
+      !price ||
+      !description ||
+      !category ||
+      !quantity ||
+      !shipping
+    ) {
       return res.status(400).json({
-        error: 'All fileds are required'
+        error: "All fileds are required",
       });
     }
-
+    // req.product comes from the param handlers (see bottom of routes/product.js)
     let product = req.product;
+    /* The _.extend() function is used to create a copy of all of the properties 
+    of the source objects over the destination object and return the destination object. 
+    The nested arrays or objects will be copied by using reference, not duplicated. 
+     _.extend(destination, *sources)  */
     product = _.extend(product, fields);
 
     if (files.photo) {
       // 1kb=1000 1mb = 1000000
       if (files.photo.size > 1000000) {
         return res.status(400).json({
-          error: 'Image should be less than 1MB in size.'
+          error: "Image should be less than 1MB in size.",
         });
       }
+      console.log("PATH: ", files.photo.path);
       product.photo.data = fs.readFileSync(files.photo.path);
       product.photo.contentType = files.photo.type;
     }
@@ -132,12 +140,13 @@ exports.update = (req, res) => {
     product.save((err, result) => {
       if (err) {
         return res.status(400).json({
-          error: 'There was a problem updating your product.'
+          error: "There was a problem updating your product.",
+          mongoError: err,
         });
       }
 
       res.status(201).json({
-        product: result
+        product: result,
       });
     });
   });
@@ -151,21 +160,19 @@ exports.update = (req, res) => {
 
 */
 exports.list = (req, res) => {
-  let order = req.query.order ? req.query.order : 'asc';
-  let sortBy = req.query.sortBy ? req.query.sortBy : '_id';
+  let order = req.query.order ? req.query.order : "asc";
+  let sortBy = req.query.sortBy ? req.query.sortBy : "_id";
   let limit = req.query.limit ? parseInt(req.query.limit) : 6;
 
   Product.find()
-    .select('-photo')
-    .populate('category')
-    .sort([
-      [sortBy, order]
-    ])
+    .select("-photo")
+    .populate("category")
+    .sort([[sortBy, order]])
     .limit(limit)
     .exec((err, products) => {
       if (err) {
         return res.status(400).json({
-          message: 'products not found'
+          message: "products not found",
         });
       }
       res.send(products);
@@ -174,19 +181,19 @@ exports.list = (req, res) => {
 
 exports.listRelated = async (req, res) => {
   let limit = req.query.limit ? parseInt(req.query.limit) : 6;
-  console.log('req.product: ', req.product);
+  console.log("req.product: ", req.product);
   Product.find({
-      _id: {
-        $ne: req.product
-      },
-      category: req.product.category
-    })
+    _id: {
+      $ne: req.product,
+    },
+    category: req.product.category,
+  })
     .limit(limit)
-    .populate('category', '_id, name')
+    .populate("category", "_id, name")
     .exec((err, products) => {
       if (err) {
         return res.status(400).json({
-          message: 'products not found'
+          message: "products not found",
         });
       }
       res.send(products);
@@ -194,15 +201,15 @@ exports.listRelated = async (req, res) => {
 };
 
 exports.listCategories = (req, res) => {
-  Product.distinct('category', {}, (err, categories) => {
+  Product.distinct("category", {}, (err, categories) => {
     if (err) {
       return res.status(400).json({
-        error: 'Not products found in this category'
+        error: "Not products found in this category",
       });
     }
 
     res.json({
-      categories
+      categories,
     });
   });
 };
@@ -216,8 +223,8 @@ exports.listCategories = (req, res) => {
  */
 
 exports.listBySearch = (req, res) => {
-  let order = req.body.order ? req.body.order : 'desc';
-  let sortBy = req.body.sortBy ? req.body.sortBy : '_id';
+  let order = req.body.order ? req.body.order : "desc";
+  let sortBy = req.body.sortBy ? req.body.sortBy : "_id";
   let limit = req.body.limit ? parseInt(req.body.limit) : 100;
   let skip = parseInt(req.body.skip);
   let findArgs = {};
@@ -227,12 +234,12 @@ exports.listBySearch = (req, res) => {
 
   for (let key in req.body.filters) {
     if (req.body.filters[key].length > 0) {
-      if (key === 'price') {
+      if (key === "price") {
         // gte -  greater than price [0-10]
         // lte - less than
         findArgs[key] = {
           $gte: req.body.filters[key][0],
-          $lte: req.body.filters[key][1]
+          $lte: req.body.filters[key][1],
         };
       } else {
         findArgs[key] = req.body.filters[key];
@@ -241,29 +248,27 @@ exports.listBySearch = (req, res) => {
   }
 
   Product.find(findArgs)
-    .select('-photo')
-    .populate('category')
-    .sort([
-      [sortBy, order]
-    ])
+    .select("-photo")
+    .populate("category")
+    .sort([[sortBy, order]])
     .skip(skip)
     .limit(limit)
     .exec((err, data) => {
       if (err) {
         return res.status(400).json({
-          error: 'Products not found'
+          error: "Products not found",
         });
       }
       res.json({
         size: data.length,
-        data
+        data,
       });
     });
 };
 
 exports.photo = (req, res, next) => {
   if (req.product.photo.data) {
-    res.set('Content-Type', req.product.photo.contentType);
+    res.set("Content-Type", req.product.photo.contentType);
     return res.send(req.product.photo.data);
   }
 
@@ -278,25 +283,25 @@ exports.listSearch = (req, res) => {
     // Mongoose $regex provides pattern matching in strings and queries
     query.name = {
       $regex: req.query.search,
-      $options: 'i'
+      $options: "i",
     };
 
     // find the product based on query object with 2 properties search and category
   }
 
-  if (req.query.category && req.query.category !== 'All') {
+  if (req.query.category && req.query.category !== "All") {
     query.category = req.query.category;
   }
 
   Product.find(query, (err, products) => {
     if (err) {
       return res.status(400).json({
-        error: errorHandler(err)
+        error: errorHandler(err),
       });
     } else {
       res.json(products);
     }
-  }).select('-photo');
+  }).select("-photo");
 };
 
 exports.decreaseQuantity = (req, res, next) => {
@@ -304,29 +309,28 @@ exports.decreaseQuantity = (req, res, next) => {
     return {
       updateOne: {
         filter: {
-          _id: item._id
+          _id: item._id,
         },
         update: {
           $inc: {
             quantity: -item.count,
-            sold: +item.count
-          }
-        } //decrement the product count and increment the number sold on each product by count purchased.
-      }
+            sold: +item.count,
+          },
+        }, //decrement the product count and increment the number sold on each product by count purchased.
+      },
     };
   });
-  console.log('product.js controller decreaseQuantity bulkOps: ', bulkOps)
+  console.log("product.js controller decreaseQuantity bulkOps: ", bulkOps);
 
   Product.bulkWrite(bulkOps, {}, (error, products) => {
-    if(error){
+    if (error) {
       return res.status(400).json({
-        error: 'Could not update product.'
-      })
+        error: "Could not update product.",
+      });
     }
-    next()
+    next();
   });
 
-  
   /* Notes on bulkWrite:
     bulkWrite(writes: any[], cb?: (err: any, res: BulkWriteOpResultObject) => void): Promise<BulkWriteOpResultObject>
     callback

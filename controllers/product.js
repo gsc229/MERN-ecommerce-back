@@ -6,15 +6,17 @@ const Product = require("../models/Product");
 
 exports.productById = (req, res, next, id) => {
   // we get id by from the router.param('productId', productById). Id is a positional argument
-  console.log(req.params);
   Product.findById(id).exec((err, product) => {
     if (err || !product) {
+      console.log({ err });
       return res.status(404).json({
-        error: `Product with id of ${req.params.productId} does not exist.`,
+        error: err,
+        error_message: `Product with id of ${req.params.productId} does not exist.`,
       });
     }
 
     req.product = product;
+
     next();
   });
 };

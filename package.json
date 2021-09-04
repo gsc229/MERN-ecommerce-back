@@ -25,5 +25,8 @@
     "morgan": "^1.10.0",
     "nodemon": "^2.0.4",
     "uuid": "^8.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.3.2"
   }
 }

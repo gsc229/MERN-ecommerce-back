@@ -58,7 +58,7 @@ exports.signOut = (req, res) => {
 exports.requireSignIn = expressJwt({
   secret: process.env.JWT_SECRET,
   userProperty: "auth", // this line requires cookie-parser ('required' statement in app.js)
-  algorithms: ['RS256']
+  algorithms: ['sha1', 'RS256', 'HS256']
 });
 
 exports.isAuth = (req, res, next) => {

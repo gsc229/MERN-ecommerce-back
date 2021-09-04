@@ -25,12 +25,14 @@ mongoose
   .connect(process.env.DATABASE, {
     useNewUrlParser: true,
     useCreateIndex: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
   })
   .then(() => console.log("DB Connected"));
 
 //middlewares
 app.use(morgan("dev"));
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(cookieParser());
 app.use(expressValidator());
 app.use(cors());
